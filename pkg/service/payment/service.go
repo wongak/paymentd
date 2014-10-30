@@ -60,6 +60,9 @@ func NewService(ctx *service.Context) (*Service, error) {
 		return nil, err
 	}
 
+	// background tasks
+	startWait(ctx)
+
 	return s, nil
 }
 
