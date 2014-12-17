@@ -157,7 +157,7 @@ func (a *AdminAPI) putNewPrincipal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := PrincipalAdminAPIResponse{}
-	resp.HttpStatus = http.StatusOK
+	resp.HttpStatus = http.StatusCreated
 	resp.Status = StatusSuccess
 	resp.Response = pr
 	resp.Info = "principal " + pr.Name + " created"

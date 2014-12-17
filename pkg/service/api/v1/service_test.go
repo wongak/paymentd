@@ -455,7 +455,7 @@ func TestPrincipal(t *testing.T) {
 
 								Convey("It should succeed", func() {
 									So(w.HeaderWritten, ShouldBeTrue)
-									So(w.StatusCode, ShouldEqual, http.StatusOK)
+									So(w.StatusCode, ShouldEqual, http.StatusCreated)
 
 									resp := ServiceResponse{}
 									dec := json.NewDecoder(&w.Buf)
