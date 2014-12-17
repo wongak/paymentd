@@ -312,7 +312,7 @@ Create a new principal
 
 	.. sourcecode:: http
 
-		HTTP/1.1 200 OK
+		HTTP/1.1 201 Created
 		Content-Type: application/json
 
 		{
@@ -341,7 +341,7 @@ Create a new principal
 	:resjson string Response.Name: The principal name
 	:resjson Object Metadata: The Metadata or ``null``
 
-	:statuscode 200: No error, current principal state returned.
+	:statuscode 201: Principal was created. Current principal state returned.
 	:statuscode 400: The request was malformed; the princial data could not be understood.
 	:statuscode 401: Unauthorized, either the username does not exist or the credentials
 	                 were incorrect.
