@@ -68,6 +68,25 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `project_status`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `project_status` ;
+
+CREATE TABLE IF NOT EXISTS `project_status` (
+  `project_id` INT UNSIGNED NOT NULL,
+  `timestamp` BIGINT UNSIGNED NOT NULL,
+  `created_by` VARCHAR(64) NOT NULL,
+  `status` VARCHAR(32) NOT NULL,
+  PRIMARY KEY (`project_id`, `timestamp`),
+  CONSTRAINT `fk_project_status_project_id`
+    FOREIGN KEY (`project_id`)
+    REFERENCES `project` (`id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `principal_metadata`
 -- -----------------------------------------------------
 DROP TABLE IF EXISTS `principal_metadata` ;
