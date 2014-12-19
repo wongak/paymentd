@@ -24,7 +24,10 @@ func WithTestProject(prDB *sql.Tx, f func(pr *project.Project)) func() {
 		proj.PrincipalID = princ.ID
 		proj.Name = "project_testproject"
 		proj.CreatedBy = "test"
+		proj.Status = project.ProjectStatusInactive
 		err = project.InsertProjectTx(prDB, proj)
+		So(err, ShouldBeNil)
+		err = project.InsertProjectStatusTx(prDB, *proj, "test2")
 		So(err, ShouldBeNil)
 
 		f(proj)
