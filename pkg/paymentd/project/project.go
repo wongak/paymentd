@@ -4,12 +4,24 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"time"
 )
 
 const (
 	metadataTable        = "project_metadata"
 	metadataPrimaryField = "project_id"
+)
+
+const (
+	ProjectStatusActive   = "active"
+	ProjectStatusInactive = "inactive"
+	ProjectStatusDeleted  = "deleted"
+)
+
+var (
+	ErrInvalidStatus = errors.New("invalid status")
+	ErrInactive      = errors.New("project inactive")
 )
 
 // Project represents a project
@@ -24,14 +36,36 @@ type Project struct {
 	Created     time.Time
 	CreatedBy   string
 
+	Status string
+
 	Config Config
 
 	Metadata map[string]string
 }
 
 // Empty returns true if the project is considered empty/uninitialized
-func (p *Project) Empty() bool {
+func (p Project) Empty() bool {
 	return p.ID == 0 && p.Name == ""
+}
+
+// ValidStatus returns an ErrInvalidStatus if the project has an invalid status
+func (p Project) ValidStatus() error {
+	if p.Status != ProjectStatusActive && p.Status != ProjectStatusInactive && p.Status != ProjectStatusDeleted {
+		return ErrInvalidStatus
+	}
+	return nil
+}
+
+// Active returns an ErrInactive if the status is not active or
+// an ErrInvalidStatus if the status is invalid
+func (p Project) Active() error {
+	if err := p.ValidStatus(); err != nil {
+		return err
+	}
+	if p.Status != ProjectStatusActive {
+		return ErrInactive
+	}
+	return nil
 }
 
 type Config struct {
