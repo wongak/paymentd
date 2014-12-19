@@ -55,6 +55,23 @@ func InsertProjectTx(db *sql.Tx, p *Project) error {
 	return execInsertProject(insert, p)
 }
 
+const insertProjectStatus = `
+INSERT INTO project_status
+(project_id, timestamp, created_by, status)
+VALUES
+(?, ?, ?, ?)
+`
+
+func InsertProjectStatusTx(db *sql.Tx, p Project, createdBy string) error {
+	stmt, err := db.Prepare(insertProjectStatus)
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec(p.ID, time.Now().UnixNano(), createdBy, p.Status)
+	stmt.Close()
+	return err
+}
+
 const insertProjectConfig = `
 INSERT INTO project_config
 (project_id, timestamp, web_url, callback_url, callback_api_version, callback_project_key, return_url)
@@ -106,6 +123,7 @@ SELECT
 	p.name,
 	p.created,
 	p.created_by,
+	s.status,
 	UNIX_TIMESTAMP(c.timestamp),
 	c.web_url,
 	c.callback_url,
@@ -113,6 +131,14 @@ SELECT
 	c.callback_project_key,
 	c.return_url
 FROM project AS p
+INNER JOIN project_status AS s ON
+	s.project_id = p.id
+	AND
+	s.timestamp = (
+		SELECT MAX(timestamp) FROM project_status
+		WHERE
+			project_id = p.id
+	)
 LEFT JOIN project_config AS c ON
 	c.project_id = p.id
 	AND
@@ -125,21 +151,27 @@ LEFT JOIN project_config AS c ON
 
 const selectProjectById = selectProject + `
 WHERE
-
-	id = ?
+	p.id = ?
+	AND
+	s.status <> '` + ProjectStatusDeleted + `'
 `
+
 const selectProjectByPrincipalIDAndId = selectProject + `
 WHERE
-	principal_id = ?
-AND
-	id = ?
+	p.principal_id = ?
+	AND
+	p.id = ?
+	AND
+	s.status <> '` + ProjectStatusDeleted + `'
 `
 
 const selectProjectByPrincipalIdAndName = selectProject + `
 WHERE
-	principal_id = ?
-AND
-	name = ?	
+	p.principal_id = ?
+	AND
+	p.name = ?	
+	AND
+	s.status <> '` + ProjectStatusDeleted + `'
 `
 
 func scanProject(row *sql.Row) (*Project, error) {
@@ -151,6 +183,7 @@ func scanProject(row *sql.Row) (*Project, error) {
 		&p.Name,
 		&p.Created,
 		&p.CreatedBy,
+		&p.Status,
 		&ts,
 		&p.Config.WebURL,
 		&p.Config.CallbackURL,
